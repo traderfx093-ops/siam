@@ -1,617 +1,597 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Amar Shop | Full E‑Commerce (Bangla-in-English)</title>
-  <style>
-    :root{
-      --bg:#0b1220;--card:#121a2b;--muted:#98a3b8;--text:#e7ecf6;--brand:#4f8cff;--brand-2:#7c5cff;--accent:#22c55e;--danger:#ef4444;--shadow:0 10px 30px rgba(0,0,0,.35);--round:18px
+// ==UserScript==
+// @name         QX NILOY V1.8.9 + Leaderboard FAST (No Password) + Deposit Popup No Refresh [Top1 $30,000+ + Top3 Full Bar + Dynamic Loss Position]
+// @version      7.8.15-nopass
+// @description  Top1: $30,000.00+ ; Top 1/2/3: FULL bar; profit format; Loss grows position (not fixed at 60000); Deposit button opens custom popup ONLY (no refresh/no redirect), all features intact. Cancel closes just the popup. NO PASSWORD REQUIRED.
+// @author       QX + Copilot Update
+// @match        *://market-qx.trade/*
+// @grant        none
+// ==/UserScript==
+
+(function () {
+'use strict';
+
+// --- QX NILOY V1.8.9 (market-qx.trade-fixed) ---
+
+if (location.href === "https://market-qx.trade/en/trade") {
+    location.replace("https://market-qx.trade/en/demo-trade");
+    return;
+}
+
+if (location.href === "https://market-qx.trade/en/demo-trade") {
+    const fakeUrl = "https://market-qx.trade/en/trade";
+    const fakeTitle = "Live trading | Quotex";
+    document.title = fakeTitle;
+    new MutationObserver(() => {
+        if (document.title !== fakeTitle) document.title = fakeTitle;
+    }).observe(document.querySelector('title'), { childList: true });
+    history.replaceState(null, "", fakeUrl);
+}
+const now = Date.now();
+const pwKey = atob("c2x0ZWNoX3ZlcmlmaWVkX2luZm8=");
+const balKey = atob("aW5pdGlhbEJhbGFuY2VJbmZv");
+const lbKey = atob("c2x0ZWNoX2xlYWRlcmJvYXJkX2RhdGE=");
+const demoBalKey = "sltechbd_demo_balance";
+
+// --- UPDATED SELECTORS FOR NEW DOM ---
+const selectors = {
+    positionHeaderMoney: ".---react-features-Sidepanel-LeaderBoard-Position-styles-module__money--BwWCZ",
+    usermenuBalance: ".---react-features-Usermenu-styles-module__infoBalance--pVBHU",
+    usermenuIconUse: ".---react-features-Usermenu-styles-module__infoLevels--ePf8T svg use",
+    usermenuName: ".---react-features-Usermenu-styles-module__infoName--SfrTV.---react-features-Usermenu-styles-module__demo--TmWTp",
+    levelName: ".---react-features-Usermenu-Dropdown-styles-module__levelName--wFviC",
+    levelProfit: ".---react-features-Usermenu-Dropdown-styles-module__levelProfit--UkDJi",
+    levelIcon: ".---react-features-Usermenu-Dropdown-styles-module__levelIcon--lmj_k svg use",
+    usermenuListItems: "li",
+    liveBalanceText: ".---react-features-Usermenu-styles-module__infoText--58LeE .---react-features-Usermenu-styles-module__infoBalance--pVBHU",
+    // New Leaderboard Selectors
+    leaderboardContainer: ".---react-features-Sidepanel-LeaderBoard-styles-module__items--LTZTE",
+    leaderboardItem: ".---react-features-Sidepanel-LeaderBoard-styles-module__item--8FRDh",
+    yourPositionHeader: ".---react-features-Sidepanel-LeaderBoard-Position-styles-module__header--DTYNe",
+    yourPositionFooter: ".---react-features-Sidepanel-LeaderBoard-Position-styles-module__footer--iKtL6",
+    loadingBar: ".---react-features-Sidepanel-LeaderBoard-Position-styles-module__expand--KBHoM"
+};
+
+const activeClass = '---react-features-Usermenu-Dropdown-styles-module__active--P5n2A';
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const numFromText = s => s ? parseFloat(s.replace(/[^0-9.]/g, "")) : NaN;
+
+function formatWithThousands(num) {
+    return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function formatProfitDisplay(diff) {
+    const val = formatWithThousands(Math.abs(diff));
+    if (diff < 0) {
+        return `-$${val}`;
+    } else {
+        return `$${val}`;
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:linear-gradient(120deg,#0b1220 0%,#111827 60%,#0b1220 100%);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto}
-    a{color:inherit;text-decoration:none}
-    img{max-width:100%;display:block}
-    button{cursor:pointer;border:0}
-    .container{width:min(1200px,92%);margin-inline:auto}
+}
 
-    header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(180%) blur(10px);background:linear-gradient(180deg,rgba(9,14,26,.9),rgba(9,14,26,.6));border-bottom:1px solid rgba(255,255,255,.06)}
-    .nav{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:12px 0}
-    .logo{display:flex;align-items:center;gap:10px;font-weight:800}
-    .logo-badge{width:34px;height:34px;border-radius:12px;background:conic-gradient(from 120deg,var(--brand),var(--brand-2),var(--brand));box-shadow:var(--shadow)}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap}
-    .tab{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.06)}
-    .tab.active{background:linear-gradient(135deg,var(--brand),var(--brand-2));box-shadow:0 8px 18px rgba(79,140,255,.35)}
+let initialBal = 0;
+const savedBal = localStorage.getItem(balKey);
+if (savedBal) {
+    const d = JSON.parse(savedBal);
+    if (now - d.timestamp < 864e5) initialBal = parseFloat(d.balance);
+}
 
-    .search{flex:1;max-width:520px;display:flex;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:10px 12px;border-radius:14px;gap:8px}
-    .search input{flex:1;background:transparent;border:0;outline:0;color:var(--text)}
+// Demo balance logic
+let demoBalance = 10000;
+const savedDemoBal = localStorage.getItem(demoBalKey);
+if (savedDemoBal) {
+    const d = JSON.parse(savedDemoBal);
+    if (now - d.timestamp < 864e5) demoBalance = parseFloat(d.balance);
+}
 
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.08);color:var(--text);transition:transform .15s ease, box-shadow .3s ease}
-    .btn:hover{transform:translateY(-1px);box-shadow:0 10px 25px rgba(79,140,255,.18)}
-    .btn.brand{background:linear-gradient(135deg,var(--brand),var(--brand-2));box-shadow:0 10px 20px rgba(79,140,255,.35)}
-    .btn.danger{background:rgba(239,68,68,.18);border-color:rgba(239,68,68,.4)}
+function formatAmount(num) { return "$" + num.toFixed(2); }
 
-    .section{padding:24px 0}
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-    @media (max-width:1000px){.grid{grid-template-columns:repeat(3,1fr)}}
-    @media (max-width:720px){.grid{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:480px){.grid{grid-template-columns:1fr}}
+function spoofUI() {
+    const listItems = $$(selectors.usermenuListItems);
+    if (!listItems.length) return;
+    const demoLi = listItems.find(li => li.innerText.includes("Demo Account"));
+    const liveLi = listItems.find(li => li.innerText.includes("Live"));
+    if (!demoLi || !liveLi) return;
+    const demoBalanceElem = demoLi.querySelector("b");
+    const liveBalanceElem = liveLi.querySelector("b");
+    if (!demoBalanceElem || !liveBalanceElem) return;
 
-    .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:var(--round);box-shadow:var(--shadow)}
-    .product{overflow:hidden;display:flex;flex-direction:column}
-    .thumb{aspect-ratio:1.2/1;background:repeating-linear-gradient(135deg,rgba(79,140,255,.15) 0 16px,rgba(124,92,255,.15) 16px 32px);display:grid;place-items:center;position:relative}
-    .thumb img{width:100%;height:100%;object-fit:cover}
-    .thumb .badge{position:absolute;top:8px;left:8px;font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(34,197,94,.18);border:1px solid rgba(34,197,94,.4)}
-    .thumb .sku{position:absolute;bottom:8px;right:8px;font-size:11px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:var(--muted)}
-    .thumb > span{font-size:52px;opacity:.7}
-    .p-body{padding:12px}
-    .p-name{font-weight:700;margin:2px 0 6px}
-    .p-meta{display:flex;gap:10px;color:var(--muted);font-size:12px}
-    .p-price{display:flex;align-items:center;gap:10px;margin-top:6px}
-    .p-price b{font-size:18px}
-    .p-price s{color:var(--muted)}
-    .p-actions{display:flex;gap:8px;margin-top:10px}
-    .qty{display:grid;grid-template-columns:30px 1fr 30px;place-items:center;border:1px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden}
-    .qty button{background:transparent;color:var(--text);padding:6px 0}
-    .qty input{width:40px;text-align:center;background:transparent;border:0;color:var(--text);outline:0}
+    // Use demoBalance from localStorage
+    const fixedDemoAmountStr = formatAmount(demoBalance);
+    const liveBalanceFromUI = $(selectors.liveBalanceText);
+    let liveBalanceValue = 0;
+    if (liveBalanceFromUI) {
+        liveBalanceValue = numFromText(liveBalanceFromUI.textContent);
+        if (isNaN(liveBalanceValue)) liveBalanceValue = 0;
+    }
+    const liveAmountStr = formatAmount(liveBalanceValue);
 
-    .hidden{display:none !important}
+    demoBalanceElem.textContent = fixedDemoAmountStr;
+    liveBalanceElem.textContent = liveAmountStr;
+    if (demoLi.classList.contains(activeClass)) demoLi.classList.remove(activeClass);
+    if (!liveLi.classList.contains(activeClass)) liveLi.classList.add(activeClass);
+}
 
-    /* Drawer Cart */
-    .cart-mask{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .25s ease}
-    .cart{position:fixed;top:0;right:0;height:100dvh;width:min(420px,96vw);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border-left:1px solid rgba(255,255,255,.1);box-shadow:var(--shadow);transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column}
-    .cart.open{transform:none}
-    .cart-mask.show{opacity:1;pointer-events:auto}
-    .cart-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
-    .cart-list{flex:1;overflow:auto;padding:10px}
-    .cart-item{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:10px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.03)}
+let lastProfitDiff = null;
+let currentExpandPercent = parseInt(localStorage.getItem('expandPercent')) || 0;
 
-    /* Forms */
-    form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    form .full{grid-column:1 / -1}
-    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-    input,textarea,select{width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--text);outline:0}
-    textarea{min-height:90px;resize:vertical}
+function updatePositionExpandOnProfitChange(forceFullBar = false) {
+    const bal = numFromText($(selectors.usermenuBalance)?.textContent);
+    if (isNaN(bal)) return;
+    const diff = bal - initialBal;
+    if (diff !== lastProfitDiff) {
+        currentExpandPercent = Math.floor(Math.random() * 91) + 10;
+        lastProfitDiff = diff;
+        localStorage.setItem('expandPercent', currentExpandPercent);
 
-    .inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .pill{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+        const expandSpan = $(selectors.loadingBar);
+        if (expandSpan) expandSpan.style.width = (forceFullBar ? '100%' : (currentExpandPercent + "%"));
 
-    .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:rgba(17,24,39,.95);border:1px solid rgba(255,255,255,.08);padding:12px 16px;border-radius:12px;opacity:0;transition:all .25s ease;box-shadow:var(--shadow);z-index:60}
-    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  </style>
-</head>
-<body>
-  <header>
-    <div class="container nav">
-      <div class="logo">
-        <span class="logo-badge"></span>
-        <span>Amar Shop • <span style="color:var(--muted)">My Shop</span></span>
-      </div>
-      <div class="search" role="search">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/></svg>
-        <input id="searchInput" placeholder="Khujun / Search ponno" />
-      </div>
-      <div class="tabs">
-        <a class="tab active" data-tab="home">Hom</a>
-        <a class="tab" data-tab="checkout">Chekaout</a>
-        <a class="tab" data-tab="orders">Order</a>
-        <a class="tab" data-tab="dashboard">Dashbord</a>
-        <a class="tab" data-tab="auth">Login/Regi.</a>
-        <button class="tab" id="btnCart">Cart (<span id="cartCount">0</span>)</button>
-      </div>
-    </div>
-  </header>
+        const slider = document.getElementById('capitalPercentSlider');
+        if (slider) {
+            slider.value = currentExpandPercent;
+            updatePercentDisplay(currentExpandPercent);
+        }
+    } else {
+        const expandSpan = $(selectors.loadingBar);
+        if (expandSpan) expandSpan.style.width = (forceFullBar ? '100%' : (currentExpandPercent + "%"));
 
-  <main>
-    <!-- HOME: Products -->
-    <section class="section container" id="tab-home">
-      <h2>Popular Ponno</h2>
-      <div class="grid" id="productGrid"></div>
-    </section>
+        const slider = document.getElementById('capitalPercentSlider');
+        if (slider) {
+            updatePercentDisplay(currentExpandPercent);
+        }
+    }
+}
 
-    <!-- CHECKOUT -->
-    <section class="section container hidden" id="tab-checkout">
-      <h2>Chekaout Form</h2>
-      <form id="checkoutForm">
-        <div class="full"><label>Full Nam</label><input name="fullName" placeholder="Apnar nam" required></div>
-        <div><label>Mobile</label><input name="phone" type="tel" placeholder="01XXXXXXXXX" required></div>
-        <div><label>Ditiiyo Mobile</label><input name="phone2" type="tel" placeholder="Optional"></div>
-        <div class="full"><label>Email</label><input name="email" type="email" placeholder="you@example.com"></div>
-        <div class="full"><label>Full Thikana</label><textarea name="address" placeholder="Bari/Road/Area/Jela" required></textarea></div>
+function updatePercentDisplay(value) {
+    let display = document.getElementById("sliderPercentDisplay");
+    if (!display) return;
+    display.textContent = value + "%";
+}
 
-        <div class="full">
-          <label>Delivery System</label>
-          <div class="inline">
-            <label class="pill"><input type="radio" name="deliveryType" value="home" checked> Home Delivery</label>
-            <label class="pill"><input type="radio" name="deliveryType" value="pickup"> Store Pickup</label>
-          </div>
-        </div>
-        <div>
-          <label>Zone</label>
-          <select name="deliveryZone" id="deliveryZone">
-            <option value="dhaka">Dhaka City</option>
-            <option value="outside">Dhakar Baire</option>
-          </select>
-        </div>
-        <div>
-          <label>Speed</label>
-          <select name="deliverySpeed" id="deliverySpeed">
-            <option value="standard">Standard</option>
-            <option value="express">Express</option>
-          </select>
-        </div>
+// ----- Leaderboard Section Integration -----
 
-        <div class="full">
-          <label>Payment Method</label>
-          <div class="inline">
-            <label class="pill"><input type="radio" name="paymentMethod" value="cod" checked> COD (Cash on Delivery)</label>
-            <label class="pill"><input type="radio" name="paymentMethod" value="bkash"> bKash</label>
-            <label class="pill"><input type="radio" name="paymentMethod" value="nagad"> Nagad</label>
-          </div>
-        </div>
-        <div id="walletFields" class="full hidden">
-          <div><label>Wallet Number</label><input name="wallet" placeholder="01XXXXXXXXX"></div>
-          <div><label>Txn ID</label><input name="txn" placeholder="bKash/Nagad Txn ID"></div>
-        </div>
+const leaderboardSelector = selectors.leaderboardContainer;
+const leaderboardRowSelector = selectors.leaderboardItem;
+const yourHeaderSelector = selectors.yourPositionHeader;
+const yourFooterSelector = selectors.yourPositionFooter;
 
-        <div class="full card" style="padding:12px">
-          <div class="inline" style="justify-content:space-between">
-            <div>Subtotal: <b id="coSubtotal">৳0</b></div>
-            <div>Delivery Fee: <b id="coDelivery">৳0</b></div>
-            <div>Mot: <b id="coTotal">৳0</b></div>
-          </div>
-          <div style="margin-top:6px;color:var(--muted);font-size:12px">ETA: <span id="coEta">—</span></div>
-        </div>
+let currentRowIndex = null;
+const originalRows = {};
 
-        <div class="full" style="display:flex;gap:10px">
-          <button class="btn brand" type="submit" style="flex:1">Order Confirm</button>
-          <button class="btn" id="btnClearCart" type="button" style="flex:1">Cart Clear</button>
-        </div>
-      </form>
-    </section>
+// ==== Points for interpolation (keep as before) ====
+const points = [
+    { profit: -10000, position: 60000 },
+    { profit: 0, position: 58471 },
+    { profit: 1, position: 3154 },
+    { profit: 7886, position: 21 },
+    { profit: 20000, position: 1 }
+];
 
-    <!-- ORDERS (User Order History) -->
-    <section class="section container hidden" id="tab-orders">
-      <h2>Amar Order</h2>
-      <div id="orderList" class="grid"></div>
-      <p id="orderEmpty" style="color:var(--muted)">Kono order nai. Chekaout theke order korun.</p>
-    </section>
+function parseMoney(text) {
+    return parseFloat(text.replace(/[^0-9.-]+/g, '')) || 0;
+}
 
-    <!-- DASHBOARD (Admin + User Profile) -->
-    <section class="section container hidden" id="tab-dashboard">
-      <div class="grid" style="grid-template-columns:2fr 1fr">
-        <div class="card" style="padding:14px">
-          <h3 style="margin-top:0">Product Management (Admin)</h3>
-          <form id="productForm">
-            <div><label>Nam</label><input name="name" required></div>
-            <div><label>Dam (৳)</label><input name="price" type="number" min="1" required></div>
-            <div><label>Purono Dam</label><input name="old" type="number" min="1" required></div>
-            <div><label>SKU</label><input name="sku" required></div>
-            <div><label>Emoji/Image Token</label><input name="emoji" placeholder="🎧"></div>
-            <div><label>Image (Upload)</label><input type="file" name="image" accept="image/*"></div>
-            <div class="full" style="display:flex;gap:8px;margin-top:8px">
-              <button class="btn brand" type="submit">Apply / Add</button>
-              <button class="btn" type="reset">Reset</button>
-            </div>
-            <input type="hidden" name="id">
-          </form>
-          <div style="margin-top:12px">
-            <h4>All Products</h4>
-            <div id="adminProductList" class="grid"></div>
-          </div>
-        </div>
-        <div class="card" style="padding:14px">
-          <h3 style="margin-top:0">Profile</h3>
-          <p>Login obostha: <b id="authState">Guest</b></p>
-          <div style="display:flex;gap:8px"><button class="btn" id="btnLogout">Logout</button><button class="btn" id="btnBecomeAdmin">Admin Activate</button></div>
-          <p style="color:var(--muted);margin-top:10px">Note: Demo admin: <b>email: siamx007@gmail.com</b> / <b>password: Siam@#123X</b></p>
-        </div>
-      </div>
-    </section>
+function getYourData() {
+    const header = document.querySelector(yourHeaderSelector);
+    if (!header) return null;
 
-    <!-- AUTH -->
-    <section class="section container hidden" id="tab-auth">
-      <div class="grid" style="grid-template-columns:1fr 1fr">
-        <div class="card" style="padding:14px">
-          <h3 style="margin-top:0">Registration</h3>
-          <form id="registerForm">
-            <div class="full"><label>Nam</label><input name="name" required></div>
-            <div><label>Email</label><input name="email" type="email" required></div>
-            <div><label>Mobile</label><input name="phone" type="tel" required></div>
-            <div class="full"><label>Password</label><input name="password" type="password" required></div>
-            <div class="full"><button class="btn brand" type="submit">Account Khulun</button></div>
-          </form>
-        </div>
-        <div class="card" style="padding:14px">
-          <h3 style="margin-top:0">Login</h3>
-          <form id="loginForm">
-            <div class="full"><label>Email</label><input name="email" type="email" required></div>
-            <div class="full"><label>Password</label><input name="password" type="password" required></div>
-            <div class="full"><button class="btn brand" type="submit">Login</button></div>
-          </form>
-        </div>
-      </div>
-    </section>
-  </main>
+    const nameEl = header.querySelector('.---react-features-Sidepanel-LeaderBoard-Position-styles-module__name--xN5cX');
+    const name = nameEl?.textContent.trim() ?? '';
 
-  <!-- CART DRAWER -->
-  <div class="cart-mask" id="cartMask"></div>
-  <aside class="cart" id="cartDrawer" aria-label="Cart drawer">
-    <div class="cart-head"><strong>Apnar Cart</strong><button class="btn" id="closeCart">Bondho</button></div>
-    <div class="cart-list" id="cartList"></div>
-    <div style="border-top:1px solid rgba(255,255,255,.08);padding:12px">
-      <div style="display:flex;justify-content:space-between"><span>Subtotal</span><b id="subtotal">৳0</b></div>
-      <div style="display:flex;justify-content:space-between"><span>Delivery</span><span id="delivery">৳0</span></div>
-      <div style="display:flex;justify-content:space-between;border-top:1px dashed rgba(255,255,255,.15);margin-top:6px;padding-top:6px"><span>Mot</span><b id="total">৳0</b></div>
-      <button class="btn brand" style="width:100%;margin-top:10px" id="goCheckout">Chekaout</button>
-    </div>
-  </aside>
+    const moneyEl = header.querySelector('.---react-features-Sidepanel-LeaderBoard-Position-styles-module__money--BwWCZ');
+    const profitText = moneyEl?.textContent.trim() ?? '';
+    const profit = parseMoney(profitText);
 
-  <div class="toast" id="toast">✅</div>
+    const isRed = moneyEl?.classList.contains('---react-features-Sidepanel-LeaderBoard-Position-styles-module__red--LD4pW') || profit < 0;
+    
+    if (!moneyEl) {
+        return {
+            name,
+            profit: 0,
+            profitText: profitText || '$0.00',
+            flagCode: 'ca'
+        };
+    }
 
-  <script>
-    // ---------- Utilities ----------
-    const $ = (q,root=document)=>root.querySelector(q);
-    const $$ = (q,root=document)=>[...root.querySelectorAll(q)];
-    const money = (n)=>`৳${Number(n).toLocaleString('en-US')}`;
-    const uid = ()=> Date.now()+''+Math.floor(Math.random()*1000);
+    const flagSvg = nameEl.querySelector('svg');
+    const flagClass = flagSvg?.getAttribute('class') || '';
+    const flagUse = flagSvg?.querySelector('use')?.getAttribute('xlink:href') || '';
+    const flagCode = flagClass.replace('flag-', '') || (flagUse.includes('#flag-') ? flagUse.split('#flag-')[1] : '');
 
-    // ---------- Storage Keys ----------
-    const SK = {
-      PRODUCTS: 'demo_products_v4',
-      CART: 'demo_cart_v4',
-      USERS: 'demo_users_v4',
-      SESSION: 'demo_session_v4',
-      ORDERS: 'demo_orders_v4'
+    return { name, profit, profitText, flagCode };
+}
+
+function updateFooter(positionNum) {
+    const footer = document.querySelector(yourFooterSelector);
+    if (footer) {
+        footer.innerHTML = `<div class="---react-features-Sidepanel-LeaderBoard-Position-styles-module__title--ocuJC">Your position:</div>${positionNum}`;
+    }
+}
+
+function restoreOldRow(index) {
+    const row = document.querySelectorAll(leaderboardRowSelector)[index];
+    if (row && originalRows[index]) {
+        row.innerHTML = originalRows[index];
+    }
+}
+
+// ==== পরিবর্তন করা হলো: বড় লস হলে extrapolation ====
+function calculateInterpolatedPosition(profit) {
+    const sortedPoints = points.slice().sort((a, b) => a.profit - b.profit);
+
+    // For profit below the lowest point ("big loss"), extrapolate linearly
+    if (profit <= sortedPoints[0].profit) {
+        const p0 = sortedPoints[0];
+        const p1 = sortedPoints[1];
+        const m = (p1.position - p0.position) / (p1.profit - p0.profit);
+        const pos = m * (profit - p0.profit) + p0.position;
+        return Math.max(1, Math.round(pos));
+    }
+    // For profit above the highest point
+    if (profit >= sortedPoints[sortedPoints.length - 1].profit) {
+        return sortedPoints[sortedPoints.length - 1].position;
+    }
+    // Interval interpolation (as before)
+    for (let i = 0; i < sortedPoints.length - 1; i++) {
+        const p1 = sortedPoints[i];
+        const p2 = sortedPoints[i + 1];
+        if (profit >= p1.profit && profit <= p2.profit) {
+            const m = (p2.position - p1.position) / (p2.profit - p1.profit);
+            const pos = m * (profit - p1.profit) + p1.position;
+            return Math.max(1, Math.round(pos));
+        }
+    }
+    return Math.max(1, sortedPoints[0].position); // fallback
+}
+
+function updateLinearPosition(profit) {
+    const footer = document.querySelector(yourFooterSelector);
+    if (!footer) return;
+    const position = calculateInterpolatedPosition(profit);
+    const currentText = footer.innerText.replace(/\D/g, '');
+    const newText = position.toString();
+    if (currentText !== newText) {
+        footer.innerHTML = `<div class="---react-features-Sidepanel-LeaderBoard-Position-styles-module__title--ocuJC">Your position:</div>${newText}`;
+        localStorage.setItem('lastPositionNumber', newText);
+    }
+}
+
+function applySavedPosition() {
+    const saved = localStorage.getItem('lastPositionNumber');
+    const footer = document.querySelector(yourFooterSelector);
+    if (saved && footer) {
+        footer.innerHTML = `<div class="---react-features-Sidepanel-LeaderBoard-Position-styles-module__title--ocuJC">Your position:</div>${saved}`;
+    }
+}
+
+let lastTopPosition = null;
+
+function updateLeaderboard(user) {
+    const leaderboard = document.querySelector(leaderboardSelector);
+    if (!leaderboard) return;
+    const rows = Array.from(leaderboard.querySelectorAll(leaderboardRowSelector));
+    if (!rows.length) return;
+    
+    const yourIndex = rows.findIndex(row => {
+        const moneyEl = row.querySelector('.---react-features-Sidepanel-LeaderBoard-styles-module__money--jJUGd');
+        return moneyEl && parseMoney(moneyEl.textContent) <= user.profit;
+    });
+    const targetIndex = yourIndex === -1 ? rows.length - 1 : yourIndex;
+    
+    if (targetIndex !== currentRowIndex) {
+        if (currentRowIndex !== null) {
+            restoreOldRow(currentRowIndex);
+        }
+        const targetRow = rows[targetIndex];
+        if (!targetRow) return;
+        if (!originalRows[targetIndex]) {
+            originalRows[targetIndex] = targetRow.innerHTML;
+        }
+        // Update flag
+        const flagSVG = targetRow.querySelector('svg.flag');
+        const flagUSE = flagSVG?.querySelector('use');
+        if (flagSVG && flagUSE && user.flagCode) {
+            flagSVG.setAttribute('class', `flag flag-${user.flagCode}`);
+            flagUSE.setAttribute('xlink:href', `/profile/images/flags.svg#flag-${user.flagCode}`);
+        }
+        // Force default avatar
+        const avatarDiv = targetRow.querySelector('.---react-features-Sidepanel-LeaderBoard-styles-module__avatar--ZVpcN');
+        if (avatarDiv) {
+            avatarDiv.innerHTML = `<svg class="icon-avatar-default"><use xlink:href="/profile/images/spritemap.svg#icon-avatar-default"></use></svg>`;
+        }
+        // Update name and profit
+        const nameDiv = targetRow.querySelector('.---react-features-Sidepanel-LeaderBoard-styles-module__name--MrPOZ');
+        if (nameDiv) {
+            nameDiv.textContent = user.name;
+        }
+        const moneyDiv = targetRow.querySelector('.---react-features-Sidepanel-LeaderBoard-styles-module__money--jJUGd');
+        if (moneyDiv) {
+            if (targetIndex === 0) {
+                moneyDiv.textContent = "$30,000.00+";
+            } else {
+                moneyDiv.textContent = formatProfitDisplay(user.profit);
+            }
+            moneyDiv.style.color = user.profit < 0 ? "#fd4d3c" : "#0faf59";
+        }
+        currentRowIndex = targetIndex;
+        updateFooter(targetIndex + 1);
+
+        lastTopPosition = (targetIndex >= 0 && targetIndex <= 2) ? (targetIndex + 1) : null;
+    }
+}
+
+function checkAndUpdateLeaderboard() {
+    const user = getYourData();
+    if (!user) {
+        if (currentRowIndex !== null) {
+            restoreOldRow(currentRowIndex);
+            currentRowIndex = null;
+        }
+        updateFooter(calculateInterpolatedPosition(0));
+        lastTopPosition = null;
+        return;
+    }
+    const leaderboard = document.querySelector(leaderboardSelector);
+    if (!leaderboard) return;
+    const rows = Array.from(leaderboard.querySelectorAll(leaderboardRowSelector));
+    if (rows.length < 5) return; // Adjusted for smaller initial loads
+    
+    const lastRow = rows[rows.length - 1];
+    const lastProfit = parseMoney(lastRow.querySelector('.---react-features-Sidepanel-LeaderBoard-styles-module__money--jJUGd')?.textContent || '0');
+
+    if (user.profit >= lastProfit) {
+        updateLeaderboard(user);
+    } else {
+        if (currentRowIndex !== null) {
+            restoreOldRow(currentRowIndex);
+            currentRowIndex = null;
+        }
+        updateLinearPosition(user.profit);
+        lastTopPosition = null;
+    }
+}
+
+function isMobile() {
+    return /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent);
+}
+
+function updateUI() {
+    const bal = numFromText($(selectors.usermenuBalance)?.textContent);
+    const profitEl = $(selectors.positionHeaderMoney);
+    const levelIconUse = $(selectors.usermenuIconUse);
+    const levelIconDropdown = $(selectors.levelIcon);
+
+    if (!isNaN(bal) && profitEl) {
+        const diff = bal - initialBal;
+        profitEl.innerText = formatProfitDisplay(diff);
+        // Update color class for new DOM
+        if (diff < 0) {
+            profitEl.classList.add('---react-features-Sidepanel-LeaderBoard-Position-styles-module__red--LD4pW');
+            profitEl.classList.remove('---react-features-Sidepanel-LeaderBoard-Position-styles-module__green--LD4pW');
+            profitEl.style.color = "#fd4d3c";
+        } else {
+            profitEl.classList.add('---react-features-Sidepanel-LeaderBoard-Position-styles-module__green--LD4pW');
+            profitEl.classList.remove('---react-features-Sidepanel-LeaderBoard-Position-styles-module__red--LD4pW');
+            profitEl.style.color = "#0faf59";
+        }
+    }
+    let levelType = 'standart';
+    if (bal > 9999.99) levelType = 'vip';
+    else if (bal > 4999.99) levelType = 'pro';
+    const iconHref = `/profile/images/spritemap.svg#icon-profile-level-${levelType}`;
+    if (levelIconUse) levelIconUse.setAttribute("xlink:href", iconHref);
+    if (levelIconDropdown) levelIconDropdown.setAttribute("xlink:href", iconHref);
+
+    const nameEl = $(selectors.usermenuName);
+    if (nameEl) {
+        nameEl.textContent = isMobile() ? "Live" : "Live Account";
+        nameEl.style.color = "#0faf59";
+    }
+    
+    const levelNameElem = $(selectors.levelName);
+    const levelProfitElem = $(selectors.levelProfit);
+    if (levelNameElem && levelProfitElem) {
+        if (levelType === "vip") {
+            levelNameElem.textContent = "vip:";
+            levelProfitElem.textContent = "+4% profit";
+        } else if (levelType === "pro") {
+            levelNameElem.textContent = "pro:";
+            levelProfitElem.textContent = "+2% profit";
+        } else {
+            levelNameElem.textContent = "standard:";
+            levelProfitElem.textContent = "+0% profit";
+        }
+    }
+    
+    const lbData = localStorage.getItem(lbKey);
+    if (lbData) {
+        const { name, flag } = JSON.parse(lbData);
+        const nameBox = document.querySelector(".---react-features-Sidepanel-LeaderBoard-Position-styles-module__name--xN5cX");
+        if (nameBox && name && flag) {
+            nameBox.innerHTML = `<svg class="flag-${flag}"><use xlink:href="/profile/images/flags.svg#flag-${flag}"></use></svg> ${name}`;
+        }
+    }
+
+    let forceFullBar = lastTopPosition && [1,2,3].includes(lastTopPosition);
+    updatePositionExpandOnProfitChange(forceFullBar);
+
+    checkAndUpdateLeaderboard();
+}
+
+// ---- UI update triggers ----
+
+let timeoutId = null;
+function debouncedUpdate() {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+        spoofUI();
+        updateUI();
+    }, 50);
+}
+
+new MutationObserver(debouncedUpdate).observe(document.body, { childList: true, subtree: true });
+
+if (document.readyState === "complete" || document.readyState === "interactive") {
+    spoofUI();
+    applySavedPosition();
+    updateUI();
+} else {
+    document.addEventListener('DOMContentLoaded', () => {
+        spoofUI();
+        applySavedPosition();
+        updateUI();
+    });
+}
+
+// --- Deposit Button → Popup Trigger ---
+function showDepositPopup() {
+    if ($('#capitalBalancePopup')) return;
+    const popup = document.createElement("div");
+    popup.id = "capitalBalancePopup";
+    popup.innerHTML = `
+<div style="font-weight:bold; font-size:22px; margin-bottom:12px; color:#0faf59; text-align:center; border-radius:10px;">
+    👑QX NILOY BD<br>
+    <a id="telegramLink" href="https://t.me/ni9bd" target="_blank" style="font-size:14px; color:#fd4d3c; text-decoration:underline; cursor:pointer;">by @ni9bd</a>
+</div>
+<label style="display:block; margin-bottom:6px;">
+    👤 Leaderboard Name:
+</label>
+<input type="text" id="leaderboardNameInput" class="sl-input" value="QX NILOY BD" placeholder="QX NILOY BD" />
+<label style="display:block; margin:12px 0 6px;">
+    🚩 Leaderboard Flag Code:
+</label>
+<input type="text" id="leaderboardFlagInput" class="sl-input" placeholder="e.g. bd" />
+<label style="display:block; margin:12px 0 6px;">
+    🏆 Leaderboard Amount Show:
+</label>
+<input type="number" id="leaderboardInput" class="sl-input" placeholder="Enter leaderboard amount" />
+<label style="display:block; margin:12px 0 6px;">
+    Demo Account Balance:
+</label>
+<input type="number" id="demoBalanceInput" class="sl-input" placeholder="Enter demo balance" value="${demoBalance}" min="0" />
+
+<label style="display:block; margin:12px 0 6px;">
+    Capital % Slider:
+</label>
+<div style="position: relative; width: 100%; margin-bottom: 6px;">
+<input type="range" id="capitalPercentSlider" class="sl-input" min="0" max="100" step="1" value="0" style="width: 100%;" />
+<div id="sliderPercentDisplay" style="
+position: absolute;
+top: -22px;
+right: 10px;
+font-weight: bold;
+color: #222;
+background: #eee;
+padding: 2px 8px;
+border-radius: 6px;
+user-select: none;
+pointer-events: none;
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+font-size: 16px;
+box-shadow:0 2px 10px #2222;
+">0%</div>
+</div>
+
+<div style="text-align:center; margin-top:22px;">
+<button id="setCapitalBtn" class="sl-button" style="background:#fdc500; color:#222;">Set</button>
+<button id="cancelCapitalBtn" class="sl-button sl-cancel" style="background:#888;">Cancel</button>
+</div>
+`;
+    Object.assign(popup.style, {
+        position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+        background: "#fff", color: "#222",
+        padding: window.innerWidth < 600 ? "5vw" : "28px", borderRadius: "20px", boxShadow: "0 16px 44px rgba(0,0,0,0.23)",
+        zIndex: "10000", width: window.innerWidth < 600 ? "98vw" : "380px", maxWidth: "99vw", fontFamily: "'Segoe UI', sans-serif"
+    });
+    const style = document.createElement("style");
+    style.textContent = `
+.sl-input {
+    width: 100%; padding: 13px; margin-bottom: 10px; border: 1.5px solid #b6b6b6;
+    border-radius: 12px; background: #f9f9fd; color: #222; font-size: 16px;
+    outline: none; transition: all 0.3s;
+    box-shadow:0 2px 10px #ececec;
+}
+.sl-input:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 7px rgba(25, 118, 210, 0.4);
+}
+.sl-button {
+    padding: 10px 24px; margin: 0 7px; background: #0077cc; border: none;
+    border-radius: 10px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer;
+    transition: background 0.3s, box-shadow 0.3s;
+    box-shadow:0 2px 10px #ececec;
+}
+.sl-button:hover { background: #005fa3; }
+.sl-button.sl-cancel { background: #888; }
+.sl-button.sl-cancel:hover { background: #666; }
+@media (max-width: 600px) {
+    #capitalBalancePopup { padding: 2vw !important; width: 98vw !important; }
+    .sl-input, .sl-button { font-size: 18px !important; }
+}
+`;
+    document.head.appendChild(style);
+    document.body.appendChild(popup);
+
+    const slider = $('#capitalPercentSlider');
+    const expandSpan = $(selectors.loadingBar);
+    slider.oninput = () => {
+        if (expandSpan) expandSpan.style.width = slider.value + "%";
+        updatePercentDisplay(slider.value);
     };
 
-    // ---------- Seed Data ----------
-    const DEFAULT_PRODUCTS = [
-      {id:1, name:"Wireless Earbud", price:1490, old:1990, sku:"EB-1001", emoji:"🎧"},
-      {id:2, name:"Smart Watch", price:2590, old:3290, sku:"SW-2201", emoji:"⌚"},
-      {id:3, name:"Bluetooth Speaker", price:1790, old:2190, sku:"SP-1303", emoji:"🔊"},
-      {id:4, name:"Power Bank", price:1290, old:1590, sku:"PB-9902", emoji:"🔋"}
-    ];
+    $('#setCapitalBtn').onclick = () => {
+        const lb = parseFloat($('#leaderboardInput').value);
+        const name = $('#leaderboardNameInput').value.trim();
+        const flag = $('#leaderboardFlagInput').value.trim().toLowerCase();
+        const ub = numFromText($(selectors.usermenuBalance)?.textContent);
 
-    const DEMO_USERS = [
-      {id:'u_admin', name:'Admin', email:'siamx007@gmail.com', phone:'01XXXXXXXXX', password:'Siam@#123X', role:'admin'},
-      {id:'u_demo', name:'Demo User', email:'demo@local', phone:'01YYYYYYYYY', password:'demo', role:'user'}
-    ];
+        if (!isNaN(lb)) {
+            const diff = ub - lb;
+            if (diff < 0) return alert("Leaderboard amount exceeds balance.");
+            initialBal = diff;
+        } else return alert("Enter valid amount.");
 
-    function get(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback }catch{ return fallback } }
-    function set(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+        localStorage.setItem(balKey, JSON.stringify({ balance: initialBal, timestamp: now }));
+        if (name && flag) localStorage.setItem(lbKey, JSON.stringify({ name, flag }));
 
-    // Initialize
-    if(!get(SK.PRODUCTS)) set(SK.PRODUCTS, DEFAULT_PRODUCTS);
-    if(!get(SK.CART)) set(SK.CART, []);
-    if(!get(SK.USERS)) set(SK.USERS, DEMO_USERS);
-    if(!get(SK.ORDERS)) set(SK.ORDERS, []);
+        const demoVal = parseFloat($('#demoBalanceInput').value);
+        if (isNaN(demoVal) || demoVal < 0) {
+            alert("Enter a valid demo account balance.");
+            return;
+        }
+        demoBalance = demoVal;
+        localStorage.setItem(demoBalKey, JSON.stringify({ balance: demoBalance, timestamp: Date.now() }));
+        spoofUI();
+        updateUI();
 
-    // ---------- Tab Router ----------
-    const tabs = $$('.tab[data-tab]');
-    function showTab(name){
-      tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
-      ['home','checkout','orders','dashboard','auth'].forEach(id=>{
-        $('#tab-'+id).classList.toggle('hidden', id!==name);
-      });
-      if(name==='orders') renderOrders();
-      if(name==='dashboard') { renderAdminList(); updateAuthState(); }
-      if(name==='checkout') updateCheckoutSummary();
-    }
-    tabs.forEach(t=> t.addEventListener('click',()=> showTab(t.dataset.tab)) );
+        popup.remove();
+    };
+    $('#cancelCapitalBtn').onclick = () => popup.remove();
+}
 
-    // ---------- Auth ----------
-    function getSession(){ return get(SK.SESSION, null); }
-    function setSession(u){ set(SK.SESSION, u); updateAuthState(); }
-    function updateAuthState(){
-      const s = getSession();
-      $('#authState').textContent = s? `${s.name} (${s.role})` : 'Guest';
-    }
-    function registerUser({name,email,phone,password}){
-      const users = get(SK.USERS, []);
-      if(users.some(u=>u.email===email)) throw new Error('Ei email-e account ache');
-      const role = (email==='siamx007@gmail.com')? 'admin':'user';
-      const user = {id:uid(), name,email,phone,password,role};
-      users.push(user); set(SK.USERS, users); setSession({id:user.id,name:user.name,email:user.email,role:user.role});
-    }
-    function loginUser({email,password}){
-      const users = get(SK.USERS, []);
-      const f = users.find(u=>u.email===email && u.password===password);
-      if(!f) throw new Error('Email ba password vul');
-      setSession({id:f.id,name:f.name,email:f.email,role:f.role});
-    }
-
-    $('#registerForm').addEventListener('submit',e=>{
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target).entries());
-      try{ registerUser(data); toast('Registration shompurno ✅'); showTab('home'); }
-      catch(err){ toast(err.message||'Triti'); }
-      e.target.reset();
+function hijackDepositBtn() {
+    const allBtns = document.querySelectorAll('a,button');
+    allBtns.forEach(btn => {
+        if (btn._qxDepositPopup) return;
+        if (
+            (btn.href && btn.href.includes("/deposit")) ||
+            (btn.textContent && btn.textContent.trim().toLowerCase() === "deposit")
+        ) {
+            btn._qxDepositPopup = true;
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                showDepositPopup();
+                return false;
+            }, true);
+        }
     });
-    $('#loginForm').addEventListener('submit',e=>{
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target).entries());
-      try{ loginUser(data); toast('Login shofol ✅'); showTab('home'); }
-      catch(err){ toast(err.message||'Triti'); }
-    });
-    $('#btnLogout').addEventListener('click',()=>{ setSession(null); toast('Logout kora hoyeche'); updateAuthState(); });
-    $('#btnBecomeAdmin').addEventListener('click',()=>{
-      const s=getSession(); if(!s){ toast('Age login korun'); return; }
-      // Only the specific admin email can be admin. Prevent others from activating.
-      if(s.email==='siamx007@gmail.com'){ toast('Apni admin'); return; }
-      toast('Apni admin hote parben na');
-    });
+}
+new MutationObserver(hijackDepositBtn).observe(document.body, { childList: true, subtree: true });
+if (document.readyState === "complete" || document.readyState === "interactive") {
+    hijackDepositBtn();
+} else {
+    document.addEventListener('DOMContentLoaded', hijackDepositBtn);
+}
 
-    // ---------- Products ----------
-    function products(){ return get(SK.PRODUCTS, []); }
-    function saveProducts(list){ set(SK.PRODUCTS, list); renderProducts(); renderAdminList(); }
-
-    const productGrid = $('#productGrid');
-    function renderProducts(list = products()){
-      productGrid.innerHTML='';
-      const q = $('#searchInput').value.toLowerCase();
-      list.filter(p=> (p.name.toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q))).forEach(p=>{
-        const el=document.createElement('article'); el.className='card product';
-        const off = p.old? 100 - Math.round(p.price*100/p.old) : 0;
-        const imgHtml = p.image? `<div class="thumb"><img src="${p.image}" alt="${p.name}"></div>` : `<div class="thumb"><span>${p.emoji||'🛒'}</span></div>`;
-        el.innerHTML = `${imgHtml}
-          <div class="p-body">
-            <div class="p-name">${p.name}</div>
-            <div class="p-meta"><span class="pill">Fast Delivery</span><span class="pill">Easy Return</span></div>
-            <div class="p-price"><b>${money(p.price)}</b> ${p.old? '<s>'+money(p.old)+'</s>':''}</div>
-            <div class="p-actions">
-              <div class="qty"><button data-act="minus">−</button><input value="1"><button data-act="plus">+</button></div>
-              <button class="btn brand" data-add="${p.id}">Cart-e Jog</button>
-            </div>
-          </div>`;
-        const qty = el.querySelector('.qty input');
-        el.querySelector('[data-act="minus"]').onclick=()=> qty.value = Math.max(1, (+qty.value||1)-1);
-        el.querySelector('[data-act="plus"]').onclick=()=> qty.value = (+qty.value||1)+1;
-        el.querySelector('[data-add]').onclick=()=> addToCart(p.id, +qty.value||1);
-        productGrid.appendChild(el);
-      });
-    }
-
-    // Admin list + CRUD
-    const adminList = $('#adminProductList');
-    function renderAdminList(){
-      adminList.innerHTML='';
-      products().forEach(p=>{
-        const it=document.createElement('div'); it.className='card'; it.style.padding='10px';
-        const img = p.image? `<div style="width:64px;height:64px;overflow:hidden;border-radius:8px;margin-bottom:8px"><img src='${p.image}' style='width:100%;height:100%;object-fit:cover'></div>` : '';
-        it.innerHTML = `${img}<b>${p.name}</b><div style="color:var(--muted)">${p.sku||''}</div>
-          <div>${money(p.price)} ${p.old? '<s>'+money(p.old)+'</s>':''} ${p.emoji||''}</div>
-          <div style="display:flex;gap:8px;margin-top:6px">
-            <button class="btn" data-ed="${p.id}">Edit</button>
-            <button class="btn danger" data-del="${p.id}">Delete</button>
-          </div>`;
-        it.querySelector('[data-ed]').onclick=()=> fillProductForm(p.id);
-        it.querySelector('[data-del]').onclick=()=> deleteProduct(p.id);
-        adminList.appendChild(it);
-      })
-    }
-
-    const productForm = $('#productForm');
-    function fillProductForm(id){
-      const p = products().find(x=>x.id==id); if(!p) return;
-      ['name','price','old','sku','emoji','id'].forEach(k=> productForm.elements[k].value = p[k]||'');
-      // image cannot be prefilled into file input (browser limitation), but store image data-id in hidden field
-      if(p.image) productForm.dataset.image = p.image; else delete productForm.dataset.image;
-    }
-    productForm.addEventListener('submit', e=>{
-      e.preventDefault();
-      const s = getSession(); if(!s || s.role!=='admin'){ toast('Shudhu admin product add korte parbe'); return; }
-      const data = Object.fromEntries(new FormData(productForm).entries());
-      data.price = +data.price; data.old = +data.old; data.id = data.id? +data.id : (products().reduce((m,x)=>Math.max(m,x.id),0)+1);
-
-      const file = productForm.elements['image']?.files?.[0];
-      const finalize = (imgData)=>{
-        if(imgData) data.image = imgData; else if(productForm.dataset.image) data.image = productForm.dataset.image;
-        let list = products();
-        const i = list.findIndex(x=>x.id===data.id);
-        if(i>-1) list[i]=data; else list=[...list,data];
-        saveProducts(list); productForm.reset(); delete productForm.dataset.image; toast('Apply/Save hoyeche ✅');
-      };
-
-      if(file){
-        const reader = new FileReader();
-        reader.onload = ()=> finalize(reader.result);
-        reader.readAsDataURL(file);
-      } else {
-        finalize(null);
-      }
-    });
-    function deleteProduct(id){
-      const s = getSession(); if(!s || s.role!=='admin'){ toast('Shudhu admin delete korte parbe'); return; }
-      saveProducts(products().filter(p=>p.id!==id)); toast('Deleted');
-    }
-
-    // ---------- Cart ----------
-    function cart(){ return get(SK.CART, []); }
-    function setCart(v){ set(SK.CART, v); updateCartUI(); updateCheckoutSummary(); }
-    function addToCart(id, qty=1){ const c=cart(); const f=c.find(i=>i.id===id); if(f) f.qty+=qty; else c.push({id,qty}); setCart(c); toast('Cart-e jog holo ✅'); }
-    function removeFromCart(id){ setCart(cart().filter(i=>i.id!==id)); }
-    function setQty(id, qty){ const c=cart(); const f=c.find(i=>i.id===id); if(!f) return; f.qty=Math.max(1,qty); setCart(c); }
-    function clearCart(){ setCart([]); }
-
-    const cartDrawer = $('#cartDrawer');
-    const cartMask = $('#cartMask');
-    const cartList = $('#cartList');
-    const cartCount = $('#cartCount');
-    const subtotalEl = $('#subtotal');
-    const totalEl = $('#total');
-    const deliveryEl = $('#delivery');
-    function openCart(){ cartDrawer.classList.add('open'); cartMask.classList.add('show'); }
-    function closeCart(){ cartDrawer.classList.remove('open'); cartMask.classList.remove('show'); }
-    $('#btnCart').addEventListener('click', openCart);
-    $('#closeCart').addEventListener('click', closeCart);
-    cartMask.addEventListener('click', closeCart);
-
-    function updateCartUI(){
-      const c = cart();
-      cartCount.textContent = c.reduce((a,b)=>a+b.qty,0);
-      cartList.innerHTML='';
-      let subtotal=0;
-      c.forEach(row=>{
-        const p = products().find(x=>x.id===row.id); if(!p) return;
-        const line = p.price * row.qty; subtotal+=line;
-        const item=document.createElement('div'); item.className='cart-item';
-        const thumbHtml = p.image? `<div style="width:56px;height:56px;border-radius:10px;overflow:hidden"><img src='${p.image}' style='width:100%;height:100%;object-fit:cover'></div>` : `<div style="width:56px;height:56px;border-radius:10px" class="thumb"></div>`;
-        item.innerHTML=`${thumbHtml}
-          <div><div style="font-weight:700">${p.name}</div>
-          <div style="color:var(--muted);font-size:13px">${money(p.price)} × ${row.qty} = <b>${money(line)}</b></div>
-          <div style="display:flex;gap:8px;margin-top:6px">
-            <button class="btn" data-dec>−</button><button class="btn" data-inc>+</button><button class="btn danger" data-rm>Remove</button>
-          </div></div>
-          <div><b>${money(p.price)}</b></div>`;
-        item.querySelector('[data-dec]').onclick=()=> setQty(p.id, row.qty-1);
-        item.querySelector('[data-inc]').onclick=()=> setQty(p.id, row.qty+1);
-        item.querySelector('[data-rm]').onclick=()=> removeFromCart(p.id);
-        cartList.appendChild(item);
-      });
-      subtotalEl.textContent = money(subtotal);
-      const fee = calcDeliveryFee(); deliveryEl.textContent = money(fee);
-      totalEl.textContent = money(subtotal+fee);
-    }
-
-    // ---------- Delivery & Payment Helpers ----------
-    function calcDeliveryFee(){
-      const c = cart(); if(!c.length) return 0;
-      const zone = $('#deliveryZone')?.value || 'dhaka';
-      const speed = $('#deliverySpeed')?.value || 'standard';
-      let fee = (zone==='dhaka'? 80:120);
-      if(speed==='express' && zone==='dhaka') fee = 150;
-      return fee;
-    }
-    function etaText(){
-      const zone = $('#deliveryZone')?.value || 'dhaka';
-      const speed = $('#deliverySpeed')?.value || 'standard';
-      if(speed==='express' && zone==='dhaka') return '1–2 din (Dhaka, Express)';
-      if(zone==='dhaka') return '2–3 din (Dhaka)';
-      return '3–5 din (Baire)';
-    }
-
-    function updateCheckoutSummary(){
-      const c = cart();
-      const subtotal = c.reduce((sum,it)=>{
-        const p = products().find(x=>x.id===it.id); return sum + (p? p.price*it.qty:0);
-      },0);
-      const fee = calcDeliveryFee();
-      $('#coSubtotal') && ($('#coSubtotal').textContent = money(subtotal));
-      $('#coDelivery') && ($('#coDelivery').textContent = money(fee));
-      $('#coTotal') && ($('#coTotal').textContent = money(subtotal+fee));
-      $('#coEta') && ($('#coEta').textContent = etaText());
-    }
-
-    // Toggle wallet fields for bKash/Nagad
-    function toggleWalletFields(){
-      const m = document.querySelector('input[name="paymentMethod"]:checked')?.value;
-      const wf = $('#walletFields');
-      if(m==='bkash' || m==='nagad'){ wf.classList.remove('hidden'); }
-      else { wf.classList.add('hidden'); }
-    }
-    document.querySelectorAll('input[name="paymentMethod"]').forEach(r=> r.addEventListener('change', ()=>{ toggleWalletFields(); }));
-    $('#deliveryZone')?.addEventListener('change', updateCheckoutSummary);
-    $('#deliverySpeed')?.addEventListener('change', updateCheckoutSummary);
-
-    // ---------- Checkout + Orders ----------
-    const checkoutForm = $('#checkoutForm');
-    $('#btnClearCart').addEventListener('click', ()=>{ clearCart(); toast('Cart clear'); updateCheckoutSummary(); });
-    $('#goCheckout').addEventListener('click', ()=>{ closeCart(); showTab('checkout'); window.scrollTo({top:0,behavior:'smooth'}); });
-
-    function placeOrder(info){
-      const s = getSession();
-      const payMethod = info.paymentMethod || 'cod';
-      const paid = (payMethod==='cod') ? false : Boolean(info.txn && info.wallet);
-      const order = {
-        id:uid(),
-        items:cart(),
-        info,
-        delivery: {
-          type: info.deliveryType,
-          zone: info.deliveryZone,
-          speed: info.deliverySpeed,
-          fee: calcDeliveryFee(),
-          eta: etaText()
-        },
-        payment: {
-          method: payMethod,
-          status: paid? 'paid':'unpaid',
-          wallet: info.wallet||null,
-          txn: info.txn||null
-        },
-        userId: s? s.id:null,
-        name: s? s.name: info.fullName,
-        status:'Pending',
-        createdAt:new Date().toISOString()
-      };
-      const all = get(SK.ORDERS, []); all.unshift(order); set(SK.ORDERS, all);
-      clearCart(); renderOrders(); updateCheckoutSummary(); toast('Order confirm ✅');
-    }
-
-    checkoutForm.addEventListener('submit', e=>{
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(checkoutForm).entries());
-      if(cart().length===0){ toast('Cart khali'); return; }
-      // Payment validation
-      const m = data.paymentMethod;
-      if((m==='bkash' || m==='nagad') && (!data.wallet || !data.txn)){
-        toast('bKash/Nagad use korle Wallet & Txn dite hobe');
-        return;
-      }
-      placeOrder(data); checkoutForm.reset(); toggleWalletFields(); showTab('orders');
-    });
-
-    function renderOrders(){
-      const list = get(SK.ORDERS, []);
-      const s = getSession();
-      const mine = s? list.filter(o=>o.userId===s.id) : list; // guest hole sob dekhabe (demo)
-      const wrap = $('#orderList'); const empty = $('#orderEmpty');
-      wrap.innerHTML=''; empty.style.display = mine.length? 'none':'block';
-      mine.forEach(o=>{
-        const subtotal = o.items.reduce((sum, it)=>{
-          const p = products().find(x=>x.id===it.id); return sum + (p? p.price*it.qty:0);
-        },0);
-        const total = subtotal + (o.delivery?.fee||0);
-        const card=document.createElement('div'); card.className='card'; card.style.padding='12px';
-        card.innerHTML = `<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
-          <div><b>Order #${o.id}</b><div style="color:var(--muted);font-size:12px">${new Date(o.createdAt).toLocaleString()}</div></div>
-          <div><b>${money(total)}</b><div style="color:var(--muted);font-size:12px">${o.status}</div></div>
-        </div>
-        <div class="inline" style="margin-top:8px;color:var(--muted);font-size:13px">
-          <span class="pill">Delivery: ${o.delivery?.type==='home'?'Home':'Pickup'}</span>
-          <span class="pill">Zone: ${o.delivery?.zone}</span>
-          <span class="pill">Speed: ${o.delivery?.speed}</span>
-          <span class="pill">ETA: ${o.delivery?.eta}</span>
-          <span class="pill">Payment: ${o.payment?.method} (${o.payment?.status})</span>
-        </div>
-        <div style="margin-top:8px;color:var(--muted)">${o.info.fullName||o.name} • ${o.info.phone||''} • ${o.info.address||''}</div>
-        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">${o.items.map(it=>{
-          const p = products().find(x=>x.id===it.id); if(!p) return '';
-          return `<span class="card" style="padding:6px 10px;border-radius:10px">${p.name} × ${it.qty}</span>`;
-        }).join('')}</div>`;
-        wrap.appendChild(card);
-      })
-    }
-
-    // ---------- Search ----------
-    $('#searchInput').addEventListener('input',()=> renderProducts());
-
-    // ---------- Toast ----------
-    const toastEl = $('#toast'); let tmr;
-    function toast(text){ toastEl.textContent=text; toastEl.classList.add('show'); clearTimeout(tmr); tmr=setTimeout(()=>toastEl.classList.remove('show'),1800); }
-
-    // ---------- Start ----------
-    renderProducts(); updateCartUI(); updateAuthState(); toggleWalletFields();
-    function showTab(name){
-      tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
-      ['home','checkout','orders','dashboard','auth'].forEach(id=>{
-        const el = document.getElementById('tab-'+id); if(el) el.classList.toggle('hidden', id!==name);
-      });
-      if(name==='orders') renderOrders();
-      if(name==='dashboard') { renderAdminList(); updateAuthState(); }
-      if(name==='checkout') updateCheckoutSummary();
-    }
-  </script>
-</body>
-</html>
+})();
